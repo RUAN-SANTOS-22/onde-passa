@@ -18,6 +18,19 @@ const simplificarFilme = (filme) => {
     }
 }
 
+const simplificarProvedores = (provedores) => {
+    return provedores && provedores.length != 0 ?
+        provedores.map(provedor => {
+            const obj = {
+                nome: provedor.provider_name,
+                logo: `https://image.tmdb.org/t/p/w92${provedor.logo_path}`
+            }
+            return obj
+        })
+        :
+        []
+}
+
 const tmdbClient = axios.create({
     baseURL: 'https://api.themoviedb.org/3',
     headers: {
@@ -41,7 +54,6 @@ app.get('/em-alta', (req, res) => {
                 mensagem: 'Não foi possível consultar o catálogo de filmes.'
             })
         })
-
 })
 
 app.get('/filmes', (req, res) => {
@@ -66,12 +78,55 @@ app.get('/filmes', (req, res) => {
         })
         .catch(erro => {
             console.log(erro)
-            
+
             res.status(502).json({
                 mensagem: 'Não foi possível consultar o catálogo de filmes.'
             })
         })
+})
+app.get('/filme', (req, res) => {
+    //console.log(req.query.id)
+    const id = req.query.id
+    if (!id) {
+        return res.status(400).json({ "mensagem": "Informe o id do filme." })
+    }
 
+    tmdbClient.get(`/movie/${id}`, {
+        params: {
+            append_to_response: "watch/providers"
+        }
+    })
+        .then(resposta => {
+            //console.log(resposta.data['watch/providers'].results.BR)
+            const filme = resposta.data
+            const provedorBR = resposta.data['watch/providers'].results.BR ?
+                resposta.data['watch/providers'].results.BR
+                :
+                {}
+
+            //console.log(resposta.data)
+            //console.log(provedorBR)
+            res.json({
+                ...simplificarFilme(filme),
+                duracao: (filme.runtime || filme.runtime != 0) ? filme.runtime : null,
+                generos: filme.genres.map(genero => genero["name"]),
+                sinopse: filme.overview ? filme.overview : null,
+                fundo: filme.backdrop_path ? `https://image.tmdb.org/t/p/w780/${filme.backdrop_path}` : null,
+                ondeAssistir: {
+                    assinatura: simplificarProvedores(provedorBR.flatrate),
+                    aluguel: simplificarProvedores(provedorBR.rent),
+                    compra: simplificarProvedores(provedorBR.buy)
+                }
+            })
+        })
+        .catch(erro => {
+            console.log(erro)
+            //console.log(erro.response.status)
+            erro.response.status == 404 ?
+                res.status(404).json({ mensagem: "Filme não encontrado." })
+                :
+                res.status(502).json({ mensagem: 'Não foi possível consultar o catálogo de filmes.' })
+        })
 })
 
 app.get('/', (req, res) => {
