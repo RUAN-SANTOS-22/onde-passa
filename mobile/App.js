@@ -8,11 +8,16 @@ import Carregando from './src/components/Carregando';
 import CartaoFilme from './src/components/CartaoFilme';
 import ListaFilmes from './src/components/ListaFilmes';
 import backendClient from './src/utils/backendClient'
+import Busca from './src/components/Busca';
 
 export default function App() {
   const [emAlta, setEmAlta] = useState([])
   const [carregando, setCarregando] = useState(true)
+  const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState(null)
+  const [termo, setTermo] = useState('')
+  const [termoBuscado, setTermoBuscado] = useState('')
+  const [resultado, setResultado] = useState(null)
 
   useEffect(() => {
     backendClient.get('/em-alta')
@@ -28,29 +33,77 @@ export default function App() {
       })
   })
 
+  const buscar = () => {
+    setMensagem('Procurando filmes...')
+    setCarregando(true)
+
+    backendClient.get('/filmes', {
+      params: {
+        busca: termo
+      }
+    })
+      .then(resposta => {
+        setResultado(resposta.data)
+        setTermoBuscado(termo)
+        setErro(null)
+        setCarregando(false)
+      })
+      .catch(erro => {
+        {
+          erro.response.data.mensagem ?
+            setErro(erro.response.data.mensagem)
+            :
+            setErro('Não foi possível buscar os filmes.')
+        }
+        setCarregando(false)
+      })
+  }
+
+  const limpar = () => {
+    setTermo('')
+    setResultado(null)
+    setErro(null)
+  }
+
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <Cabecalho />
+        <Busca
+          termo={termo}
+          onTermoAlterado={setTermo}
+          onBuscar={buscar}
+          onLimpar={limpar}
+        />
         <View style={styles.subContainer}>
           {carregando ?
-            <Carregando mensagem="Buscando os filmes em alta..." />
+            <Carregando mensagem={mensagem} />
             :
             erro ?
               <Text style={styles.erro}>
                 {erro}
               </Text>
               :
-              <ListaFilmes
-                titulo="Em alta nesta semana"
-                filmes={emAlta}
-              />
+              resultado === null ?
+                <ListaFilmes
+                  titulo="Em alta nesta semana"
+                  filmes={emAlta}
+                />
+                :
+                resultado.length === 0 ?
+                  <Text style={styles.erro}> Nenhum filme encontrado para "{termoBuscado}"</Text>
+                  :
+                  <ListaFilmes
+                    titulo={`Resultados para "${termoBuscado}"`}
+                    filmes={resultado}
+                  />
           }
         </View>
         <View style={styles.rodape}>
           <Credito />
         </View>
-        
+
       </SafeAreaView>
     </SafeAreaProvider>
   );
