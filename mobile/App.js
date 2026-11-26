@@ -14,6 +14,7 @@ import DetalhesFilme from './src/components/DetalhesFilme';
 export default function App() {
   const [emAlta, setEmAlta] = useState([])
   const [carregando, setCarregando] = useState(true)
+  const [buscando, setBuscando] = useState(false)
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState(null)
   const [termo, setTermo] = useState('')
@@ -35,35 +36,58 @@ export default function App() {
       })
   })
 
-  const buscar = () => {
-    setMensagem('Procurando filmes...')
-    setCarregando(true)
+  useEffect(() => {
+    const termoLimpo = termo.trim()
 
-    backendClient.get('/filmes', {
-      params: {
-        busca: termo
-      }
-    })
-      .then(resposta => {
-        setResultado(resposta.data)
-        setTermoBuscado(termo)
-        setErro(null)
-        setCarregando(false)
-      })
-      .catch(erro => {
-        erro.response.data.mensagem ?
-          setErro(erro.response.data.mensagem)
-          :
-          setErro('Não foi possível buscar os filmes.')
+    setBuscando(false)
 
-        setCarregando(false)
+    if (termoLimpo === '') {
+      setResultado(null)
+      setErro(null)
+      return
+    }
+
+    if (termoLimpo.length < 3) {
+      return
+    }
+
+    let ativa = true
+
+    const agendamento = setTimeout(() => {
+      setBuscando(true)
+
+      backendClient.get('/filmes', {
+        params: {
+          busca: termoLimpo
+        }
       })
-  }
+        .then(resposta => {
+          if (!ativa) return
+
+          setResultado(resposta.data)
+          setTermoBuscado(termoLimpo)
+          setErro(null)
+          setBuscando(false)
+        })
+        .catch(erro => {
+          if (!ativa) return
+
+          erro.response?.data?.mensagem ?
+            setErro(erro.response.data.mensagem)
+            :
+            setErro('Não foi possível buscar os filmes.')
+          setBuscando(false)
+        })
+    }, 600)
+
+    return () => {
+      ativa = false
+      clearTimeout(agendamento)
+    }
+  }, [termo])
 
   const limpar = () => {
     setTermo('')
-    setResultado(null)
-    setErro(null)
   }
 
   return (
@@ -76,7 +100,7 @@ export default function App() {
             <Busca
               termo={termo}
               onTermoAlterado={setTermo}
-              onBuscar={buscar}
+              buscando={buscando}
               onLimpar={limpar}
             />
             <View style={styles.subContainer}>
@@ -107,17 +131,17 @@ export default function App() {
             </View>
           </View>
           :
-            <View style={styles.subContainer}>
-              <DetalhesFilme
-                id={filmeSelecionado}
-                onVoltar= {() => setFilmeSelecionado(null)}
-              />
-            </View>  
-          }
-
-          <View style={styles.rodape}>
-            <Credito />
+          <View style={styles.subContainer}>
+            <DetalhesFilme
+              id={filmeSelecionado}
+              onVoltar={() => setFilmeSelecionado(null)}
+            />
           </View>
+        }
+
+        <View style={styles.rodape}>
+          <Credito />
+        </View>
 
       </SafeAreaView>
     </SafeAreaProvider>

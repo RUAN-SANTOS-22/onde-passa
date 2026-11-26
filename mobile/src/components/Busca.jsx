@@ -1,47 +1,57 @@
 import React from 'react'
-import { TextInput, Text, View, Pressable, StyleSheet } from 'react-native'
+import { TextInput, Text, View, Pressable, StyleSheet,ActivityIndicator } from 'react-native'
 
-const Busca = ({ termo, onTermoAlterado, onBuscar, onLimpar }) => {
+const Busca = ({ termo, onTermoAlterado, onLimpar, buscando }) => {
+    const tamanho = termo.trim().length
+
     return (
         <View style={styles.container}>
-            <Pressable
-                onPress={onBuscar}
-                style={styles.btnBuscar}>
-                <Text style={styles.texto}>buscar</Text>
-            </Pressable>
-
-            <TextInput
-                value={termo}
-                onChangeText={onTermoAlterado}
-                placeholder='Digite o título de um filme'
-                onSubmitEditing={onBuscar}
-                placeholderTextColor="#ffffff"
-                style={styles.input}
-            />
-
-            {termo !== '' ?
-                <Pressable
-                    onPress={onLimpar}
-                    style={styles.btnLimpar}
-                >
-                    <Text style={styles.texto}>✕</Text>
-                </Pressable>
+            <View style={styles.subContainer}>
+                <TextInput
+                    value={termo}
+                    onChangeText={onTermoAlterado}
+                    placeholder='Digite o título de um filme'
+                    placeholderTextColor="#ffffff"
+                    style={styles.input}
+                />
+                {buscando ?
+                    <ActivityIndicator size="small" color="#e1b6fd" />
+                    :
+                    null
+                }
+                {termo !== '' ?
+                    <Pressable
+                        onPress={onLimpar}
+                        style={styles.btnLimpar}
+                    >
+                        <Text style={styles.texto}>✕</Text>
+                    </Pressable>
+                    :
+                    null
+                }
+            </View>
+            {tamanho > 0 && tamanho < 3 ?
+                <Text style={styles.dica}>Digite pelo menos 3 letras.</Text>
                 :
                 null
             }
+
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
+        marginHorizontal: 15,
+        marginBottom: 5
+    },
+    subContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
         backgroundColor: "#28015c96",
         borderRadius: 5,
         padding: 6,
-        marginHorizontal: 15,
         marginBottom: 5
     },
     input: {
@@ -65,6 +75,12 @@ const styles = StyleSheet.create({
     texto: {
         color: '#260047',
         fontWeight: 'bold'
+    },
+    dica: {
+        color: '#b0a0ba',
+        fontSize: 12,
+        paddingLeft: 6,
+        marginTop: 4
     }
 })
 
