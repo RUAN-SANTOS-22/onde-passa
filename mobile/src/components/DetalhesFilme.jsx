@@ -5,6 +5,7 @@ import { ScrollView, Image, Text, StyleSheet, View, Pressable } from 'react-nati
 import Carregando from './Carregando';
 import { formatarNota } from '../utils/formatacao';
 import { formatarDuracao } from '../utils/formatacao';
+import Provedores from './Provedores';
 
 const DetalhesFilme = ({ id, onVoltar }) => {
     const [filme, setFilme] = useState(null)
@@ -46,6 +47,12 @@ const DetalhesFilme = ({ id, onVoltar }) => {
             .join(' · ')
         :
         ''
+    const semProvedores = filme ?
+        filme.ondeAssistir.assinatura.length === 0 &&
+        filme.ondeAssistir.aluguel.length === 0 &&
+        filme.ondeAssistir.compra.length === 0
+        :
+        false
 
     return (
         <View style={styles.container}>
@@ -101,10 +108,28 @@ const DetalhesFilme = ({ id, onVoltar }) => {
                         </View>
 
                         <View style={styles.infoSinopse}>
-                            <Text style={styles.tituloSinopse}>Sinopse</Text>
+                            <Text style={styles.subtitulo}>Sinopse</Text>
                             <Text style={styles.sinopse}>
                                 {filme.sinopse ? filme.sinopse : 'Sinopse indisponível'}
                             </Text>
+                        </View>
+
+                        <View style={styles.secaoOnde}>
+                            <Text style={styles.subtitulo}>Onde assistir no Brasil</Text>
+
+                            {semProvedores ?
+                                <Text style={styles.sinopse}>
+                                    Este filme não está disponível em nenhum serviço no Brasil no momento.
+                                </Text>
+                                :
+                                <>
+                                    <Provedores titulo="Assinatura" provedores={filme.ondeAssistir.assinatura} />
+                                    <Provedores titulo="Aluguel" provedores={filme.ondeAssistir.aluguel} />
+                                    <Provedores titulo="Compra" provedores={filme.ondeAssistir.compra} />
+                                </>
+                            }
+
+                            <Text style={styles.credito}>Dados de disponibilidade: JustWatch</Text>
                         </View>
                     </ScrollView>
             }
@@ -119,7 +144,7 @@ const styles = StyleSheet.create({
         padding: 12
     },
     textoVoltar: {
-        color:  "#ffeb6a",
+        color: "#ffeb6a",
         fontWeight: 'bold',
         fontSize: 18
     },
@@ -171,13 +196,23 @@ const styles = StyleSheet.create({
         paddingHorizontal: 14,
         gap: 6
     },
-    tituloSinopse: {
+    subtitulo: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#e3e3e3'
     },
     sinopse: {
         color: '#cacaca'
+    },
+    secaoOnde: {
+        paddingHorizontal: 14,
+        paddingVertical: 16,
+        gap: 12,
+    },
+    credito: {
+        fontSize: 10,
+        fontStyle: 'italic',
+        color: '#b0a0ba'
     }
 })
 
