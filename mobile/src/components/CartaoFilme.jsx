@@ -1,9 +1,9 @@
 import React from 'react'
-import { View, Image, StyleSheet, Text } from 'react-native'
+import { View, Image, StyleSheet, Text, Pressable } from 'react-native'
 
-const CartaoFilme = ({ titulo= "O ultimo farol", ano , nota, poster }) => {
+const CartaoFilme = ({ titulo, ano, nota, poster, onSelecionar }) => {
     return (
-        <View style={styles.container}>
+        <Pressable style={styles.container} onPress={onSelecionar}>
             {poster ?
                 <Image
                     source={{ uri: poster }}
@@ -18,20 +18,22 @@ const CartaoFilme = ({ titulo= "O ultimo farol", ano , nota, poster }) => {
                 <Text style={styles.titulo} numberOfLines={2}>
                     {titulo}
                 </Text>
-                {ano ? 
+                {ano ?
                     <Text style={styles.ano} >
                         {ano}
                     </Text>
-                :
+                    :
                     null
                 }
                 <Text style={styles.nota} >
                     {nota}
                 </Text>
             </View>
-        </View>
+
+        </Pressable>
     )
 }
+
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',

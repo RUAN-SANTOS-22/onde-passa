@@ -9,6 +9,7 @@ import CartaoFilme from './src/components/CartaoFilme';
 import ListaFilmes from './src/components/ListaFilmes';
 import backendClient from './src/utils/backendClient'
 import Busca from './src/components/Busca';
+import DetalhesFilme from './src/components/DetalhesFilme';
 
 export default function App() {
   const [emAlta, setEmAlta] = useState([])
@@ -18,6 +19,7 @@ export default function App() {
   const [termo, setTermo] = useState('')
   const [termoBuscado, setTermoBuscado] = useState('')
   const [resultado, setResultado] = useState(null)
+  const [filmeSelecionado, setFilmeSelecionado] = useState(null)
 
   useEffect(() => {
     backendClient.get('/em-alta')
@@ -49,12 +51,11 @@ export default function App() {
         setCarregando(false)
       })
       .catch(erro => {
-        {
-          erro.response.data.mensagem ?
-            setErro(erro.response.data.mensagem)
-            :
-            setErro('Não foi possível buscar os filmes.')
-        }
+        erro.response.data.mensagem ?
+          setErro(erro.response.data.mensagem)
+          :
+          setErro('Não foi possível buscar os filmes.')
+
         setCarregando(false)
       })
   }
@@ -65,44 +66,58 @@ export default function App() {
     setErro(null)
   }
 
-
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
-        <Cabecalho />
-        <Busca
-          termo={termo}
-          onTermoAlterado={setTermo}
-          onBuscar={buscar}
-          onLimpar={limpar}
-        />
-        <View style={styles.subContainer}>
-          {carregando ?
-            <Carregando mensagem={mensagem} />
-            :
-            erro ?
-              <Text style={styles.erro}>
-                {erro}
-              </Text>
-              :
-              resultado === null ?
-                <ListaFilmes
-                  titulo="Em alta nesta semana"
-                  filmes={emAlta}
-                />
+
+        {filmeSelecionado === null ?
+          <View style={styles.subContainer}>
+            <Cabecalho />
+            <Busca
+              termo={termo}
+              onTermoAlterado={setTermo}
+              onBuscar={buscar}
+              onLimpar={limpar}
+            />
+            <View style={styles.subContainer}>
+              {carregando ?
+                <Carregando mensagem={mensagem} />
                 :
-                resultado.length === 0 ?
-                  <Text style={styles.erro}> Nenhum filme encontrado para "{termoBuscado}"</Text>
+                erro ?
+                  <Text style={styles.erro}>
+                    {erro}
+                  </Text>
                   :
-                  <ListaFilmes
-                    titulo={`Resultados para "${termoBuscado}"`}
-                    filmes={resultado}
-                  />
+                  resultado === null ?
+                    <ListaFilmes
+                      titulo="Em alta nesta semana"
+                      filmes={emAlta}
+                      onSelecionar={setFilmeSelecionado}
+                    />
+                    :
+                    resultado.length === 0 ?
+                      <Text style={styles.erro}> Nenhum filme encontrado para "{termoBuscado}"</Text>
+                      :
+                      <ListaFilmes
+                        titulo={`Resultados para "${termoBuscado}"`}
+                        filmes={resultado}
+                        onSelecionar={setFilmeSelecionado}
+                      />
+              }
+            </View>
+          </View>
+          :
+            <View style={styles.subContainer}>
+              <DetalhesFilme
+                id={filmeSelecionado}
+                onVoltar= {() => setFilmeSelecionado(null)}
+              />
+            </View>  
           }
-        </View>
-        <View style={styles.rodape}>
-          <Credito />
-        </View>
+
+          <View style={styles.rodape}>
+            <Credito />
+          </View>
 
       </SafeAreaView>
     </SafeAreaProvider>
@@ -112,7 +127,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 5,
+    padding: 1,
     backgroundColor: '#17002f',
   },
   subContainer: {

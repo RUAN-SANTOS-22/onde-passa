@@ -3,7 +3,7 @@ import { View, FlatList, StyleSheet, Text } from 'react-native'
 import CartaoFilme from './CartaoFilme'
 import { formatarNota } from '../utils/formatacao'
 
-const ListaFilmes = ({ titulo, filmes }) => {
+const ListaFilmes = ({ titulo, filmes, onSelecionar }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>
@@ -18,6 +18,7 @@ const ListaFilmes = ({ titulo, filmes }) => {
             ano={item.ano}
             nota={formatarNota(item.nota)}
             poster={item.poster}
+            onSelecionar={()=> onSelecionar(item.id)}
           />}
       />
 
@@ -32,6 +33,9 @@ const styles = StyleSheet.create({
   titulo: {
     color: "#ffffff",
     fontWeight: "bold",
+    fontSize: 16,
+    paddingLeft: 6,
+    marginBottom: 6
   },
 
 })
