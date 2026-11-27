@@ -42,6 +42,7 @@ const tmdbClient = axios.create({
 })
 
 app.get('/em-alta', (req, res) => {
+    //console.log('chamou?')
     tmdbClient.get('/trending/movie/week')
         .then(resposta => {
             const filmesEmAlta = resposta.data.results.map(simplificarFilme)

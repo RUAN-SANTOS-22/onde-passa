@@ -5,7 +5,6 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import Cabecalho from './src/components/Cabecalho';
 import Credito from './src/components/Credito';
 import Carregando from './src/components/Carregando';
-import CartaoFilme from './src/components/CartaoFilme';
 import ListaFilmes from './src/components/ListaFilmes';
 import backendClient from './src/utils/backendClient'
 import Busca from './src/components/Busca';
@@ -15,7 +14,6 @@ export default function App() {
   const [emAlta, setEmAlta] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [buscando, setBuscando] = useState(false)
-  const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState(null)
   const [termo, setTermo] = useState('')
   const [termoBuscado, setTermoBuscado] = useState('')
@@ -34,7 +32,7 @@ export default function App() {
         setCarregando(false)
         setErro("Não foi possível carregar os filmes. Verifique se o backend está no ar.")
       })
-  })
+  },[])
 
   useEffect(() => {
     const termoLimpo = termo.trim()
@@ -105,7 +103,7 @@ export default function App() {
             />
             <View style={styles.subContainer}>
               {carregando ?
-                <Carregando mensagem={mensagem} />
+                <Carregando mensagem="Buscando os filmes em alta..." />
                 :
                 erro ?
                   <Text style={styles.erro}>
